@@ -2,41 +2,120 @@
 <html lang="en" data-th-replace="~{fragments/skeleton::layout (~{::content})}">
 <head>
     <meta charset="UTF-8">
-    <!-- You MUST include jQuery 3.4+ before Fomantic -->
     <meta data-th-replace="~{fragments/scripts::js_css}"/>
     <title>Search</title>
 </head>
 <body>
 
-<div class="ui fluid container" data-th-fragment="content">
+
+<div class="ui fluid container py-5 bg-principal" data-th-fragment="content">
     <div class="ui padded basic segment">
-        <!--        <h1 class="ui dividing header">PostgreSQL Full Text Search (FTS)</h1>-->
-
-        <div class="ui padded segment">
-
-            <h2 class="ui dividing sub header">
-                Movies / Quotes search
-            </h2>
-
-            <div class="ui padded basic segment">
-                <form data-th-action="@{/search}" class="ui form" method="post" id="search_form">
-
-                    <div class="ui fluid action input">
-                        <input type="text" placeholder="Search..." name="q" id="q" data-th-value="${q}"
-                               autofocus="autofocus">
-                        <button class="ui teal icon button">
-                            <i class="search icon"></i>Filter
-                        </button>
-                    </div>
-
-                </form>
+        <div>
+            <h3 class="text-white">REL8TED SEARCH ENGINE</h3>
+        </div>
+        <div class="d-flex align-items-start mt-3">
+            <div class="p-3">
+                <button class="nav-link text-white" id="quickSearchBtn" onclick="showQuickSearch()">
+                    QUICK SEARCH
+                </button>
+                <script>
+                    function showQuickSearch() {
+                        const quickSearchForm = document.getElementById("quickSearchForm");
+                        const powerSearchForm = document.getElementById("powerSearchForm");
+                        powerSearchForm.style.display = "none";
+                        quickSearchForm.style.display = "inline";
+                    }
+                </script>
             </div>
+            <div class="p-3">
+                <button class="nav-link text-white" id="powerSearchBtn" onclick="showPowerSearch()">POWER SEARCH
+                </button>
+                <script>
+                    function showPowerSearch() {
+                        const quickSearchForm = document.getElementById("quickSearchForm");
+                        const powerSearchForm = document.getElementById("powerSearchForm");
+                        quickSearchForm.style.display = "none";
+                        powerSearchForm.style.display = "inline";
+                    }
+                </script>
+            </div>
+        </div>
+
+        <div id="searchContainer">
+            <!-- Quick Search Form -->
+            <div id="quickSearchForm">
+                <div class="ui padded segment">
+                    <h2 class="ui dividing sub header">Quick Search</h2>
+                    <div class="ui padded basic segment">
+                        <form data-th-action="@{/search}" class="ui form" method="post">
+                            <div class="ui fluid action input">
+                                <input type="text" placeholder="Movie or Quote" name="q" id="q" data-th-value="${q}"
+                                       autofocus="autofocus">
+                                <button class="ui teal icon button">
+                                    <i class="search icon"></i>Search
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div id="powerSearchForm" style="display: none">
+                <div class="ui padded segment">
+                    <h2 class="ui dividing sub header">Power Search</h2>
+                    <div class="ui padded basic segment">
+                        <form data-th-action="@{/powerSearch}" class="ui form row" method="post" id="power_search_form">
+                            <div class="field col-6">
+                                <label for="author">Author:</label>
+                                <select name="author" id="author" data-th-value="${author}">
+                                    <option th:each="author : ${authors}" th:text="${author}">Action</option>
+                                </select>
+                            </div>
+                            <div class="field col-6">
+                                <label>Actor:</label>
+                                <div>
+                                    <input type="text" name="actors" id="actors" data-th-value="${actors}">
+                                    <script>
+                                        document.getElementById("post_remote_posted_url").addEventListener("keyup", function() {
+                                            this.value = this.value;
+                                        });
+                                    </script>
+                                </div>
+                            </div>
+                            <div class="field col-6">
+                                <label for="genre">Genre:</label>
+                                <select name="genre" id="genre" data-th-value="${genre}">
+                                    <option value="action" th:each="genre : ${genres}" th:text="${genre}">Action</option>
+                                </select>
+                            </div>
+                            <div class="field col-6">
+                                <label for="keywords" data-th-value="${keywords}">Keywords:</label>
+                                <input type="text" name="keywords" id="keywords">
+                            </div>
+                            <div class="field col-6">
+                                <label>Ranking:</label>
+                                <div style="display: flex;justify-content: center">
+                                    <div style="display: flex;justify-content: space-between">
+                                        <input type="number" name="min" id="min" placeholder="min"
+                                               data-th-value="${min}">
+                                        <input type="number" name="max" id="max" placeholder="max"
+                                               data-th-value="${max}">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <button class="ui teal icon button w-50 text-center" type="submit">
+                                    <i class="search icon"></i>Search
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
 
         </div>
 
-
         <div class="ui segment" data-th-if="${docs}">
-
             <table class="ui small table" data-th-if="${not #lists.isEmpty(docs)}">
                 <thead>
                 <tr>
@@ -60,37 +139,28 @@
             </table>
 
             <div class="ui container" data-th-if="${#lists.isEmpty(docs)}">
-
                 <div class="ui warning message">
-                    <div class="ui dividing sub header">
-                        Nothing found!
-                    </div>
+                    <div class="ui dividing sub header">Nothing found!</div>
                     <div data-th-remove="tag" data-th-if="${misspelling}">
                         <span data-th-if="${not #lists.isEmpty(misspelling)}">Did you mean?</span>
-
                         <div class="ui relaxed divided link list">
-                            <a data-th-attr="onclick=|search_misspelled('${m.word}')|" class="item" data-th-each="m : ${misspelling}"
-                               data-th-text="${m.word}">
+                            <a data-th-attr="onclick=|search_misspelled('${m.word}')|" class="item"
+                               data-th-each="m : ${misspelling}" data-th-text="${m.word}">
                                 suggestion
                             </a>
-
                             <script>
-                                function search_misspelled(correct){
+                                function search_misspelled(correct) {
                                     $("#q").val(correct);
-                                    $("#search_form").submit();
+                                    $("#quick_search_form").submit();
                                 }
                             </script>
                         </div>
                     </div>
                 </div>
             </div>
-
         </div>
-
     </div>
-
 </div>
-
 
 </body>
 </html>
